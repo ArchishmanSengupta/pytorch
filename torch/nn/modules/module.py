@@ -1970,7 +1970,7 @@ class Module:
             f"'{type(self).__name__}' object has no attribute '{name}'"
         )
 
-    def __setattr__(self, name: str, value: Union[Tensor, "Module"]) -> None:
+    def __setattr__(self, name: str, value: Any) -> None:
         def remove_from(*dicts_or_sets) -> None:
             for d in dicts_or_sets:
                 if name in d:
