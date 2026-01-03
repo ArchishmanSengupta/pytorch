@@ -1676,7 +1676,19 @@ class ReduceLROnPlateau(LRScheduler):
         self.cooldown = cooldown
         self.eps = eps
         self.last_epoch = 0
+        self._step_count = 0
         self._last_lr = _param_groups_val_list(self.optimizer, "lr")
+
+        # Initialize base learning rates (like LRScheduler.__init__)
+        for group in optimizer.param_groups:
+            initial_lr = group["lr"]
+            if isinstance(initial_lr, Tensor):
+                initial_lr = initial_lr.clone()
+            group.setdefault("initial_lr", initial_lr)
+        self.base_lrs: list[float | Tensor] = _param_groups_val_list(
+            optimizer, "initial_lr"
+        )
+
         self._init_is_better(
             mode=mode, threshold=threshold, threshold_mode=threshold_mode
         )
