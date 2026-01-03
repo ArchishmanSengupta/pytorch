@@ -2261,6 +2261,15 @@ class CosineAnnealingWarmRestarts(LRScheduler):
                 self.T_cur = epoch
         self.last_epoch = math.floor(epoch)
 
+        # Handle param groups added after scheduler initialization
+        if len(self.optimizer.param_groups) > len(self.base_lrs):
+            for group in self.optimizer.param_groups[len(self.base_lrs) :]:
+                initial_lr = group.get("initial_lr", group["lr"])
+                if isinstance(initial_lr, Tensor):
+                    initial_lr = initial_lr.clone()
+                group.setdefault("initial_lr", initial_lr)
+                self.base_lrs.append(initial_lr)
+
         with _enable_get_lr_call(self):
             for param_group, lr in zip(
                 self.optimizer.param_groups, self.get_lr(), strict=True
